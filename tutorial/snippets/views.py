@@ -1,13 +1,15 @@
+from django.contrib.auth.models import User
+from django.http import HttpResponse, JsonResponse  # response 체크
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse # response 체크
-from django.views.decorators.csrf import csrf_exempt # csrf_token 체크
-# from rest_framework.parsers import JSONParser # json import
-from snippets.models import Snippet # snippet import
-from snippets.serializers import SnippetSerializer # serializers import
-from rest_framework import status, mixins, generics
+from django.views.decorators.csrf import csrf_exempt  # csrf_token 체크
+from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+# from rest_framework.parsers import JSONParser # json import
+from snippets.models import Snippet  # snippet import
+from snippets.serializers import SnippetSerializer, UserSerializer  # serializers import
 
 """
 class SnippetList(APIView):
@@ -117,25 +119,23 @@ def snippet_detail(request, pk):
         return HttpResponse(status=204) #204: no content
 """
 
-class SnippetList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+class SnippetList(generics.ListCreateAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+    def perform_create(self, serializer):
+        serializer.save(owner = self.request.user)
 
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-
-class SnippetDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-    
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
-    
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
