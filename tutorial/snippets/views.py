@@ -4,11 +4,12 @@ from django.views.decorators.csrf import csrf_exempt # csrf_token 체크
 # from rest_framework.parsers import JSONParser # json import
 from snippets.models import Snippet # snippet import
 from snippets.serializers import SnippetSerializer # serializers import
-from rest_framework import status
+from rest_framework import status, mixins, generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+"""
 class SnippetList(APIView):
     # List GET: 목록 조회
     def get(self, request, format = None):
@@ -41,6 +42,7 @@ class SnippetDetail(APIView):
         snippet = Snippet.objects.get(pk = pk)
         snippet.delete()
         return Response(status = status.HTTP_204_NO_CONTENT)
+"""
 """
 @api_view(['GET', 'POST'])
 def snippet_list(request, format=None):
@@ -115,4 +117,25 @@ def snippet_detail(request, pk):
         return HttpResponse(status=204) #204: no content
 """
 
+class SnippetList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
 
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+class SnippetDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+    
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
