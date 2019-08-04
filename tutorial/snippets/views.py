@@ -7,7 +7,41 @@ from snippets.serializers import SnippetSerializer # serializers import
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
+class SnippetList(APIView):
+    # List GET: 목록 조회
+    def get(self, request, format = None):
+        snippets = Snippet.objects.all()
+        serializer = SnippetSerializer(snippets, many = True)
+        return Response(serializer.data)
+    # List POST: 새로운 snippet Create
+    def post(self, request, format = None):
+        serializer = SnippetSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status = status.HTTP_201_CREATED)
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+# GET -> Snippet 조회(Read)
+# PUT -> Snippet 수정(Update)
+# DELETE -> Snippet 삭제(Destroy)
+class SnippetDetail(APIView):
+    def get(self, request, pk, format = None):
+        snippet = Snippet.objects.get(pk = pk)
+        serializer = SnippetSerializer(snippet)
+        return Response(serializer.data)
+    def put(self, request, pk, format = None):
+        snippet = Snippet.objects.get(pk = pk)
+        serializer = SnippetSerializer(snippet, data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, pk, format = None):
+        snippet = Snippet.objects.get(pk = pk)
+        snippet.delete()
+        return Response(status = status.HTTP_204_NO_CONTENT)
+"""
 @api_view(['GET', 'POST'])
 def snippet_list(request, format=None):
     if request.method == 'GET':
@@ -40,6 +74,7 @@ def snippet_detail(request, pk, format = None):
         return Response(status=status.HTTP_204_NO_CONTENT)
 # Create your views here.
 # @csrf_exempt # csrf_token을 쓰지 않아도 요청을 보낼 수 있게 됨.
+"""
 """def snippet_list(request):
     # GET: 조회(List)
     if request.method == 'GET':
@@ -79,3 +114,4 @@ def snippet_detail(request, pk):
         snippet.delete()
         return HttpResponse(status=204) #204: no content
 """
+
