@@ -6,7 +6,7 @@ from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from .permissions import IsOwnerOrReadOnly
 # from rest_framework.parsers import JSONParser # json import
 from snippets.models import Snippet  # snippet import
 from snippets.serializers import SnippetSerializer, UserSerializer  # serializers import
@@ -130,7 +130,7 @@ class SnippetList(generics.ListCreateAPIView):
 class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAuthenticatedOrReadOnly]
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
