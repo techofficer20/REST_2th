@@ -115,3 +115,4 @@ def snippet_detail(request, pk):
         return HttpResponse(status=204) #204: no content
 """
 
+
